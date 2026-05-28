@@ -31,7 +31,7 @@ jobs:
         env:
           # 站点凭据 (Secrets → Actions)
           V2EX_COOKIE: ${{ secrets.V2EX_COOKIE }}
-          MAKELOVE_SESSION: ${{ secrets.MAKELOVE_SESSION }}
+          MAKELOVE_ACCESS_TOKEN: ${{ secrets.MAKELOVE_ACCESS_TOKEN }}
           MAKELOVE_USER_ID: ${{ secrets.MAKELOVE_USER_ID }}
           # 通知通道 (任意配置一个或多个,不配置则不推送)
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
