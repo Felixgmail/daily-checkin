@@ -17,8 +17,10 @@ daily-checkin/
 ├── main.py                    # 入口: 发现任务 → 执行 → 汇总 → 通知
 ├── checkins/                  # 签到任务目录(新增站点放这里)
 │   ├── base.py                # 任务基类 CheckinTask
+│   ├── _newapi.py             # New API 通用基类(供 makelove/52mx 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
-│   └── v2ex.py                # V2EX 签到示例
+│   ├── makelove_cloud.py      # newapi.makelove.cloud
+│   └── m52mx_net.py           # 52mx.net
 ├── notify/                    # 通知模块
 │   └── __init__.py
 ├── .github/workflows/
@@ -102,20 +104,26 @@ class MySiteTask(CheckinTask):
 
 ```bash
 pip install -r requirements.txt
-
-# 选填环境变量来测试单个签到
-export V2EX_COOKIE="..."
-
 python main.py
+
+# 测试单站点单账号(其他未配置的会自动跳过)
+MAKELOVE_A6732413_TOKEN='xxx' MAKELOVE_A6732413_USER_ID='952' python main.py
 ```
+
+## 凭据维护
+
+**New API 站点(makelove / 52mx 等)的 Access Token 是长效的,不会过期**,只在以下情况需要更新:
+1. 你在网站个人设置里**手动重置了 token**
+2. 站点管理员升级或重置了 token(极少发生)
+
+判断 token 是否失效: workflow 跑出来报错 `Access Token 已失效或被重置` 时,重新登录浏览器
+GET `/api/user/token` 拿新值,然后 `gh secret set <NAME> --repo Felixgmail/daily-checkin --body '新token'`
+即可,无需重新部署或改代码。
 
 ## 常见问题
 
 **Q: cron 不准时?**
 A: GitHub Actions 的免费 cron 高峰期可能延迟,这是平台行为。如果非要准时,改成自己的服务器跑或加更细的 cron。
-
-**Q: V2EX 签到提示 Cookie 失效?**
-A: V2EX 的 cookie 有效期长但不是永久,失效后重新登录浏览器,F12 复制 Cookie 整段更新到 Secrets。
 
 **Q: 仓库要不要保持 active?**
 A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,需要 push 一个 commit 来唤醒。可以加个每月自动提交的 workflow 续命,但通常你手动改点东西就够了。
