@@ -2,14 +2,16 @@ name: Daily Checkin
 
 on:
   schedule:
-    # 每天 UTC 00:07 = 北京时间 08:07 (避开整点高峰)
-    - cron: '7 0 * * *'
-  workflow_dispatch:  # 支持手动触发
+    # 每天 UTC 00:00 = 北京时间 08:00 (脚本会再加 0-40 分钟随机延迟,实际开跑 08:00-08:40)
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # 支持手动触发(跳过启动延迟,立即跑)
 
 jobs:
   checkin:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # 启动延迟 0-40 分 + 同站串行(最坏 5 个账号 × 15 分钟间隔 = 60 分) + 网络请求,
+    # 上限留宽一些防止意外耗时把 job 砍掉。
+    timeout-minutes: 120
 
     steps:
       - name: Checkout
