@@ -1,0 +1,40 @@
+name: Daily Checkin
+
+on:
+  schedule:
+    # 每天 UTC 00:07 = 北京时间 08:07 (避开整点高峰)
+    - cron: '7 0 * * *'
+  workflow_dispatch:  # 支持手动触发
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run checkin
+        # 失败的签到不让整个 job 失败,这样下次定时还会继续跑
+        # 想要失败标红可以删掉 continue-on-error
+        continue-on-error: true
+        env:
+          # 站点凭据 (Secrets → Actions)
+          V2EX_COOKIE: ${{ secrets.V2EX_COOKIE }}
+          # 通知通道 (任意配置一个或多个,不配置则不推送)
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          BARK_KEY: ${{ secrets.BARK_KEY }}
+          BARK_SERVER: ${{ secrets.BARK_SERVER }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+        run: python main.py
