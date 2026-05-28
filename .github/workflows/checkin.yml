@@ -40,6 +40,8 @@ jobs:
           MAKELOVE_JDUHG82736_USER_ID: ${{ secrets.MAKELOVE_JDUHG82736_USER_ID }}
           MAKELOVE_ZHANGGUOHUA_TOKEN: ${{ secrets.MAKELOVE_ZHANGGUOHUA_TOKEN }}
           MAKELOVE_ZHANGGUOHUA_USER_ID: ${{ secrets.MAKELOVE_ZHANGGUOHUA_USER_ID }}
+          MAKELOVE_LIYANGFENG_TOKEN: ${{ secrets.MAKELOVE_LIYANGFENG_TOKEN }}
+          MAKELOVE_LIYANGFENG_USER_ID: ${{ secrets.MAKELOVE_LIYANGFENG_USER_ID }}
           # ===== 52mx.net 多账号 =====
           # 同样的命名约定 (M 前缀是因为 Secret 名不能以数字开头)
           M52MX_A6732413_TOKEN: ${{ secrets.M52MX_A6732413_TOKEN }}
