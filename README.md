@@ -20,7 +20,8 @@ daily-checkin/
 │   ├── _newapi.py             # New API 通用基类(供 makelove/52mx 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
-│   └── m52mx_net.py           # 52mx.net
+│   ├── m52mx_net.py           # 52mx.net
+│   └── uu6_top.py             # api.uu6.top
 ├── notify/                    # 通知模块
 │   └── __init__.py
 ├── .github/workflows/
@@ -41,6 +42,8 @@ daily-checkin/
 | `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
 | `M52MX_<账号名>_TOKEN` | 52mx.net 该账号的 Access Token |
 | `M52MX_<账号名>_USER_ID` | 52mx.net 该账号的 user id |
+| `UU6_<账号名>_TOKEN` | api.uu6.top 该账号的 Access Token |
+| `UU6_<账号名>_USER_ID` | api.uu6.top 该账号的 user id |
 
 **多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字)。例如:
 - makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`

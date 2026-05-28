@@ -46,6 +46,9 @@ jobs:
           M52MX_A6732413_USER_ID: ${{ secrets.M52MX_A6732413_USER_ID }}
           M52MX_LINFANGJI_TOKEN: ${{ secrets.M52MX_LINFANGJI_TOKEN }}
           M52MX_LINFANGJI_USER_ID: ${{ secrets.M52MX_LINFANGJI_USER_ID }}
+          # ===== api.uu6.top 多账号 =====
+          UU6_A6732413_TOKEN: ${{ secrets.UU6_A6732413_TOKEN }}
+          UU6_A6732413_USER_ID: ${{ secrets.UU6_A6732413_USER_ID }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
