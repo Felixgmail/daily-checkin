@@ -36,8 +36,8 @@ daily-checkin/
 | Secret 名 | 说明 |
 |---|---|
 | `V2EX_COOKIE` | V2EX 登录后浏览器中的整段 Cookie |
-| `MAKELOVE_USERNAME` | newapi.makelove.cloud 用户名 |
-| `MAKELOVE_PASSWORD` | newapi.makelove.cloud 密码 |
+| `MAKELOVE_SESSION` | newapi.makelove.cloud 浏览器 session cookie (该站对 GitHub Actions IP 做登录风控,只能用 Cookie 跳过登录;有效期 30 天) |
+| `MAKELOVE_USER_ID` | newapi.makelove.cloud 用户 id(F12 抓任意 /api/user/* 请求的 `New-Api-User` 头值) |
 
 ### 通知通道(任选其一或多个,不配则不推送)
 
@@ -124,9 +124,13 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
 
 ### newapi.makelove.cloud (`checkins/makelove_cloud.py`)
 基于 [New API](https://github.com/QuantumNous/new-api) 衍生版 `v1.0.0-rc.6-makelove.1`。
-- 登录: `POST /api/user/login {"username","password"}` → 设置 session Cookie,响应 `data.id` 是用户 id
+- **⚠️ IP 风控**: 该站对 GitHub Actions 的 Azure ASN(AS8075) 做了登录拦截 ——
+  Azure IP 直接调 `/api/user/login` 即使用对密码也会返回"用户名或密码错误,或用户已被封禁"。
+  因此本脚本走 Cookie 方案: 跳过登录,直接拿浏览器抓的 session cookie 调签到接口
+  (签到接口本身不被风控)。
 - 鉴权: **session Cookie + `New-Api-User: <id>` header** 双因子。少任一都会返回 `Unauthorized, New-Api-User header not provided`
 - 签到: `POST /api/user/checkin`
   - 成功: `{"success":true,"message":"...","data":{...}}`
   - 已签: `{"success":false,"message":"今日已签到"}`
 - 用户信息: `GET /api/user/self` → `data.quota`,余额 ≈ `quota / 500000` USD
+- Cookie 更新: cookie 有效期 30 天,过期后浏览器重登 → F12 复制 → 在仓库 Settings 里更新 `MAKELOVE_SESSION`

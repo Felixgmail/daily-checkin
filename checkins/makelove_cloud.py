@@ -1,16 +1,29 @@
 """newapi.makelove.cloud 签到 (New API 衍生版)。
 
+⚠️ 该站对 GitHub Actions 的 Azure IP 段做了登录风控,
+   GitHub IP 直接登录会被拒("用户名或密码错误,或用户已被封禁"),
+   即使密码正确。
+   因此本脚本走 Cookie 方案: 跳过登录,直接用浏览器抓到的 session cookie 调签到接口。
+
 需要环境变量:
-- MAKELOVE_USERNAME: 登录用户名
-- MAKELOVE_PASSWORD: 登录密码
+- MAKELOVE_SESSION: 浏览器登录后的 session cookie 值(不包含 "session=")
+- MAKELOVE_USER_ID: 用户 id (登录后任意 API 响应里的 data.id,本账号是 952)
+
+获取方法:
+1. 浏览器登录 https://newapi.makelove.cloud
+2. F12 → Application → Cookies → https://newapi.makelove.cloud
+   → 复制 "session" 的 Value → 设到 MAKELOVE_SESSION
+3. F12 → Network → 任意 /api/user/* 请求 → Request Headers
+   → 找 "New-Api-User" 的值 → 设到 MAKELOVE_USER_ID
+
+cookie 有效期 30 天,过期了需要重新登录浏览器再复制一次。
 
 接口侦察记录:
-- 登录: POST /api/user/login {"username","password"} → 设置 session cookie,响应 data.id 是用户 id
-- 鉴权: 后续请求需带 Cookie: session=... 和 New-Api-User: <id> 两个头
+- 鉴权: session Cookie + New-Api-User: <id> header 双因子,缺一不可
 - 签到: POST /api/user/checkin
     成功: {"success":true,"message":"...","data":{...}}
     已签: {"success":false,"message":"今日已签到"}
-- 用户信息: GET /api/user/self → quota 字段是配额 (quota/500000 ≈ USD)
+- 用户信息: GET /api/user/self → data.quota,余额 ≈ quota / 500000 USD
 """
 from __future__ import annotations
 
@@ -27,77 +40,51 @@ QUOTA_PER_USD = 500000  # New API 默认换算
 
 class MakeloveCloudTask(CheckinTask):
     name = "makelove.cloud"
-    required_env = ["MAKELOVE_USERNAME", "MAKELOVE_PASSWORD"]
+    required_env = ["MAKELOVE_SESSION", "MAKELOVE_USER_ID"]
 
     def check_in(self) -> CheckinResult:
         session = requests.Session()
-        # 尽量模拟浏览器,绕过简单的 UA/header 风控
         session.headers.update({
             "User-Agent": UA,
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-            "Sec-Ch-Ua-Mobile": "?0",
-            "Sec-Ch-Ua-Platform": '"Windows"',
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
             "Origin": BASE,
+            "Referer": f"{BASE}/console/personal",
+            "New-Api-User": self.env["MAKELOVE_USER_ID"],
         })
+        session.cookies.set("session", self.env["MAKELOVE_SESSION"],
+                            domain="newapi.makelove.cloud", path="/")
 
-        # 0) 先访问登录页拿可能的 cookie / 让 CDN 给我们一个 session 草稿
-        try:
-            session.get(f"{BASE}/login", headers={
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Sec-Fetch-Dest": "document",
-                "Sec-Fetch-Mode": "navigate",
-                "Sec-Fetch-Site": "none",
-            }, timeout=20)
-        except Exception:
-            pass
-
-        # 1) 登录
-        login_resp = session.post(
-            f"{BASE}/api/user/login",
-            json={
-                "username": self.env["MAKELOVE_USERNAME"],
-                "password": self.env["MAKELOVE_PASSWORD"],
-            },
-            headers={"Referer": f"{BASE}/login"},
-            timeout=20,
-        )
-        if login_resp.status_code != 200:
-            return CheckinResult(self.name, success=False,
-                                 message=f"登录失败 HTTP {login_resp.status_code}: {login_resp.text[:200]}")
-        login_data = login_resp.json()
-        if not login_data.get("success"):
-            return CheckinResult(self.name, success=False,
-                                 message=f"登录失败: {login_data.get('message', '未知错误')}")
-        user_id = login_data["data"]["id"]
-
-        # 2) 签到 (需要 New-Api-User header)
-        session.headers["New-Api-User"] = str(user_id)
-        session.headers["Referer"] = f"{BASE}/console/personal"
+        # 1) 签到
         ci_resp = session.post(f"{BASE}/api/user/checkin", timeout=20)
         if ci_resp.status_code != 200:
             return CheckinResult(self.name, success=False,
-                                 message=f"签到请求失败 HTTP {ci_resp.status_code}")
-        ci_data = ci_resp.json()
+                                 message=f"签到请求失败 HTTP {ci_resp.status_code}: {ci_resp.text[:200]}")
+        try:
+            ci_data = ci_resp.json()
+        except ValueError:
+            return CheckinResult(self.name, success=False,
+                                 message=f"响应非 JSON: {ci_resp.text[:200]}")
         ci_msg = ci_data.get("message", "")
         ci_ok = ci_data.get("success", False)
 
-        # 3) 查余额 (无论签到成功与否都查一下,展示给用户)
+        # cookie 失效的典型特征
+        if "Unauthorized" in ci_msg or "请先登录" in ci_msg or ci_resp.status_code == 401:
+            return CheckinResult(self.name, success=False,
+                                 message=f"Cookie 已失效,请更新 MAKELOVE_SESSION ({ci_msg})")
+
+        # 2) 查余额
         balance_text = ""
         try:
             self_resp = session.get(f"{BASE}/api/user/self", timeout=20)
             if self_resp.status_code == 200:
-                quota = self_resp.json().get("data", {}).get("quota", 0)
-                balance_text = f", 余额 ${quota / QUOTA_PER_USD:.2f}"
+                data = self_resp.json().get("data", {})
+                if data:
+                    quota = data.get("quota", 0)
+                    balance_text = f", 余额 ${quota / QUOTA_PER_USD:.2f}"
         except Exception:
             pass
 
-        # "今日已签到" 也算成功的常见结果
         if ci_ok or "已签" in ci_msg:
             return CheckinResult(self.name, success=True,
                                  message=f"{ci_msg or '签到成功'}{balance_text}")

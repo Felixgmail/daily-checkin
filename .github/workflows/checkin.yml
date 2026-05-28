@@ -24,12 +24,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Debug runner IP
-        run: |
-          echo "Runner egress IP:"
-          curl -s https://api.ipify.org && echo
-          curl -s https://ipinfo.io | python -c "import json,sys; d=json.load(sys.stdin); print(f\"  org: {d.get('org')}\"); print(f\"  country: {d.get('country')}\"); print(f\"  region: {d.get('region')}\")"
-
       - name: Run checkin
         # 失败的签到不让整个 job 失败,这样下次定时还会继续跑
         # 想要失败标红可以删掉 continue-on-error
@@ -37,8 +31,8 @@ jobs:
         env:
           # 站点凭据 (Secrets → Actions)
           V2EX_COOKIE: ${{ secrets.V2EX_COOKIE }}
-          MAKELOVE_USERNAME: ${{ secrets.MAKELOVE_USERNAME }}
-          MAKELOVE_PASSWORD: ${{ secrets.MAKELOVE_PASSWORD }}
+          MAKELOVE_SESSION: ${{ secrets.MAKELOVE_SESSION }}
+          MAKELOVE_USER_ID: ${{ secrets.MAKELOVE_USER_ID }}
           # 通知通道 (任意配置一个或多个,不配置则不推送)
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
