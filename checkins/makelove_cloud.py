@@ -31,11 +31,31 @@ class MakeloveCloudTask(CheckinTask):
 
     def check_in(self) -> CheckinResult:
         session = requests.Session()
+        # 尽量模拟浏览器,绕过简单的 UA/header 风控
         session.headers.update({
             "User-Agent": UA,
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Sec-Ch-Ua": '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
             "Origin": BASE,
-            "Referer": f"{BASE}/login",
         })
+
+        # 0) 先访问登录页拿可能的 cookie / 让 CDN 给我们一个 session 草稿
+        try:
+            session.get(f"{BASE}/login", headers={
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+            }, timeout=20)
+        except Exception:
+            pass
 
         # 1) 登录
         login_resp = session.post(
@@ -44,11 +64,12 @@ class MakeloveCloudTask(CheckinTask):
                 "username": self.env["MAKELOVE_USERNAME"],
                 "password": self.env["MAKELOVE_PASSWORD"],
             },
+            headers={"Referer": f"{BASE}/login"},
             timeout=20,
         )
         if login_resp.status_code != 200:
             return CheckinResult(self.name, success=False,
-                                 message=f"登录失败 HTTP {login_resp.status_code}")
+                                 message=f"登录失败 HTTP {login_resp.status_code}: {login_resp.text[:200]}")
         login_data = login_resp.json()
         if not login_data.get("success"):
             return CheckinResult(self.name, success=False,
