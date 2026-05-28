@@ -25,12 +25,23 @@ from notify import send_notification
 
 
 def discover_tasks() -> list[CheckinTask]:
-    """遍历 checkins 包内所有模块,实例化每个 CheckinTask 子类。"""
+    """遍历 checkins 包内所有模块,生成所有 CheckinTask 实例。
+
+    每个模块支持两种导出方式:
+    1. 模块顶层提供 `tasks: list[CheckinTask]` —— 直接用(可包含多账号实例)
+    2. 否则扫描模块内的 CheckinTask 子类,每个类实例化一份
+    """
     tasks: list[CheckinTask] = []
     for mod_info in pkgutil.iter_modules(checkins.__path__):
         if mod_info.name in ("base",) or mod_info.name.startswith("_"):
             continue
         module = importlib.import_module(f"checkins.{mod_info.name}")
+
+        explicit = getattr(module, "tasks", None)
+        if isinstance(explicit, list) and explicit:
+            tasks.extend(t for t in explicit if isinstance(t, CheckinTask))
+            continue
+
         for _, obj in inspect.getmembers(module, inspect.isclass):
             if (issubclass(obj, CheckinTask)
                     and obj is not CheckinTask

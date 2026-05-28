@@ -29,11 +29,14 @@ jobs:
         # 想要失败标红可以删掉 continue-on-error
         continue-on-error: true
         env:
-          # 站点凭据 (Secrets → Actions)
-          V2EX_COOKIE: ${{ secrets.V2EX_COOKIE }}
-          MAKELOVE_ACCESS_TOKEN: ${{ secrets.MAKELOVE_ACCESS_TOKEN }}
-          MAKELOVE_USER_ID: ${{ secrets.MAKELOVE_USER_ID }}
-          # 通知通道 (任意配置一个或多个,不配置则不推送)
+          # ===== makelove.cloud 多账号 =====
+          # 新增账号: 在 Secrets 里加一对 MAKELOVE_<账号名>_TOKEN 和 MAKELOVE_<账号名>_USER_ID,
+          # 然后在这里复制一对引用即可。脚本会自动发现并签到。
+          MAKELOVE_A6732413_TOKEN: ${{ secrets.MAKELOVE_A6732413_TOKEN }}
+          MAKELOVE_A6732413_USER_ID: ${{ secrets.MAKELOVE_A6732413_USER_ID }}
+          MAKELOVE_JDUHG82736_TOKEN: ${{ secrets.MAKELOVE_JDUHG82736_TOKEN }}
+          MAKELOVE_JDUHG82736_USER_ID: ${{ secrets.MAKELOVE_JDUHG82736_USER_ID }}
+          # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
           BARK_SERVER: ${{ secrets.BARK_SERVER }}

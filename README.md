@@ -35,9 +35,14 @@ daily-checkin/
 
 | Secret 名 | 说明 |
 |---|---|
-| `V2EX_COOKIE` | V2EX 登录后浏览器中的整段 Cookie |
-| `MAKELOVE_ACCESS_TOKEN` | newapi.makelove.cloud 个人 Access Token (在 `/console/personal` 页面生成,不绑 IP) |
-| `MAKELOVE_USER_ID` | newapi.makelove.cloud 用户 id (F12 抓任意 /api/user/* 请求的 `New-Api-User` 头值) |
+| `MAKELOVE_<账号名>_TOKEN` | newapi.makelove.cloud 该账号的 Access Token |
+| `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
+
+**多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字),例如:
+- 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
+- 账号 jduhg82736: `MAKELOVE_JDUHG82736_TOKEN` + `MAKELOVE_JDUHG82736_USER_ID`
+
+加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 
 ### 通知通道(任选其一或多个,不配则不推送)
 
@@ -116,14 +121,8 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
 
 留作以后维护/调试时参考。
 
-### V2EX (`checkins/v2ex.py`)
-- 鉴权: 浏览器 Cookie
-- 流程: `GET /mission/daily` 提取 `once` token → `GET /mission/daily/redeem?once=xxx`
-- 已签判断: 页面包含 `每日登录奖励已领取`
-- Cookie 失效特征: 找不到 once 正则
-
 ### newapi.makelove.cloud (`checkins/makelove_cloud.py`)
-基于 [New API](https://github.com/QuantumNous/new-api) 衍生版 `v1.0.0-rc.6-makelove.1`。
+基于 [New API](https://github.com/QuantumNous/new-api) 衍生版 `v1.0.0-rc.6-makelove.1`。**支持多账号**。
 - **⚠️ IP 风控两层**:
   1. `/api/user/login` 在 GitHub Actions 的 Azure ASN(AS8075) 上直接拒登("用户名或密码错误,或用户已被封禁")
   2. session cookie 绑定登录 IP, 跨 IP 复用 cookie 返回 401 "无权进行此操作,未登录且未提供 access token"
@@ -135,3 +134,4 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
   - 已签: `{"success":false,"message":"今日已签到"}`
 - 用户信息: `GET /api/user/self` → `data.quota`,余额 ≈ `quota / 500000` USD
 - token 失效特征: 响应 message 含 "无权" 或 HTTP 401 → 用户手动重置过 token,需要重新拿一次更新 Secret
+- 多账号实现: 模块顶层 `tasks = _discover_accounts()`,扫描所有 `MAKELOVE_<账号>_TOKEN` 环境变量配对 `_USER_ID` 生成实例。`main.py` 优先使用模块的 `tasks` 列表,这样一个模块可以注册任意数量的任务实例。
