@@ -36,6 +36,8 @@ daily-checkin/
 | Secret 名 | 说明 |
 |---|---|
 | `V2EX_COOKIE` | V2EX 登录后浏览器中的整段 Cookie |
+| `MAKELOVE_USERNAME` | newapi.makelove.cloud 用户名 |
+| `MAKELOVE_PASSWORD` | newapi.makelove.cloud 密码 |
 
 ### 通知通道(任选其一或多个,不配则不推送)
 
@@ -107,3 +109,24 @@ A: V2EX 的 cookie 有效期长但不是永久,失效后重新登录浏览器,F1
 
 **Q: 仓库要不要保持 active?**
 A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,需要 push 一个 commit 来唤醒。可以加个每月自动提交的 workflow 续命,但通常你手动改点东西就够了。
+
+---
+
+## 附:已接入站点的接口侦察记录
+
+留作以后维护/调试时参考。
+
+### V2EX (`checkins/v2ex.py`)
+- 鉴权: 浏览器 Cookie
+- 流程: `GET /mission/daily` 提取 `once` token → `GET /mission/daily/redeem?once=xxx`
+- 已签判断: 页面包含 `每日登录奖励已领取`
+- Cookie 失效特征: 找不到 once 正则
+
+### newapi.makelove.cloud (`checkins/makelove_cloud.py`)
+基于 [New API](https://github.com/QuantumNous/new-api) 衍生版 `v1.0.0-rc.6-makelove.1`。
+- 登录: `POST /api/user/login {"username","password"}` → 设置 session Cookie,响应 `data.id` 是用户 id
+- 鉴权: **session Cookie + `New-Api-User: <id>` header** 双因子。少任一都会返回 `Unauthorized, New-Api-User header not provided`
+- 签到: `POST /api/user/checkin`
+  - 成功: `{"success":true,"message":"...","data":{...}}`
+  - 已签: `{"success":false,"message":"今日已签到"}`
+- 用户信息: `GET /api/user/self` → `data.quota`,余额 ≈ `quota / 500000` USD
