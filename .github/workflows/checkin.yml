@@ -36,6 +36,14 @@ jobs:
           MAKELOVE_A6732413_USER_ID: ${{ secrets.MAKELOVE_A6732413_USER_ID }}
           MAKELOVE_JDUHG82736_TOKEN: ${{ secrets.MAKELOVE_JDUHG82736_TOKEN }}
           MAKELOVE_JDUHG82736_USER_ID: ${{ secrets.MAKELOVE_JDUHG82736_USER_ID }}
+          MAKELOVE_ZHANGGUOHUA_TOKEN: ${{ secrets.MAKELOVE_ZHANGGUOHUA_TOKEN }}
+          MAKELOVE_ZHANGGUOHUA_USER_ID: ${{ secrets.MAKELOVE_ZHANGGUOHUA_USER_ID }}
+          # ===== 52mx.net 多账号 =====
+          # 同样的命名约定 (M 前缀是因为 Secret 名不能以数字开头)
+          M52MX_A6732413_TOKEN: ${{ secrets.M52MX_A6732413_TOKEN }}
+          M52MX_A6732413_USER_ID: ${{ secrets.M52MX_A6732413_USER_ID }}
+          M52MX_LINFANGJI_TOKEN: ${{ secrets.M52MX_LINFANGJI_TOKEN }}
+          M52MX_LINFANGJI_USER_ID: ${{ secrets.M52MX_LINFANGJI_USER_ID }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
