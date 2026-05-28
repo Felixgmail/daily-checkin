@@ -24,23 +24,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Debug secret length (临时)
-        env:
-          MAKELOVE_ACCESS_TOKEN: ${{ secrets.MAKELOVE_ACCESS_TOKEN }}
-          MAKELOVE_USER_ID: ${{ secrets.MAKELOVE_USER_ID }}
-        run: |
-          python -c "
-          import os, hashlib
-          t = os.environ.get('MAKELOVE_ACCESS_TOKEN', '')
-          u = os.environ.get('MAKELOVE_USER_ID', '')
-          # 用 sha256 比对(不会暴露 secret)
-          print('token sha256:', hashlib.sha256(t.encode()).hexdigest())
-          print('token raw_len:', len(t.encode('utf-8')))
-          print('token has_trailing_newline:', repr(t[-1:] == chr(10)) if t else 'empty')
-          print('uid sha256:', hashlib.sha256(u.encode()).hexdigest())
-          print('uid raw_len:', len(u.encode('utf-8')))
-          "
-
       - name: Run checkin
         # 失败的签到不让整个 job 失败,这样下次定时还会继续跑
         # 想要失败标红可以删掉 continue-on-error
