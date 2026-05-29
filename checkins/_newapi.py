@@ -14,6 +14,8 @@ import os
 import re
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from checkins.base import CheckinTask, CheckinResult
 
@@ -21,6 +23,9 @@ from checkins.base import CheckinTask, CheckinResult
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 QUOTA_PER_USD = 500000
+
+# 对 5xx / 连接错误自动重试 2 次,间隔 1s → 2s
+_RETRY = Retry(total=2, backoff_factor=1, status_forcelist=[502, 503, 504])
 
 
 class NewAPITask(CheckinTask):
@@ -37,14 +42,19 @@ class NewAPITask(CheckinTask):
         self._user_id_env = user_id_env
         super().__init__()
 
-    def check_in(self) -> CheckinResult:
+    def _make_session(self) -> requests.Session:
         session = requests.Session()
+        session.mount("https://", HTTPAdapter(max_retries=_RETRY))
         session.headers.update({
             "User-Agent": UA,
             "Accept": "application/json, text/plain, */*",
             "Authorization": f"Bearer {self.env[self._token_env]}",
             "New-Api-User": self.env[self._user_id_env],
         })
+        return session
+
+    def check_in(self) -> CheckinResult:
+        session = self._make_session()
 
         # 1) 签到
         ci_resp = session.post(f"{self.base_url}/api/user/checkin", timeout=20)

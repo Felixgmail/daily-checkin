@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 
 @dataclass
@@ -22,7 +22,9 @@ class CheckinTask:
     name: str = "未命名"
 
     # 该任务需要的环境变量名列表。若任一为空则跳过该任务(视为未配置)。
-    required_env: list[str] = field(default_factory=list)
+    # 注意: CheckinTask 不是 dataclass,这里就是一个普通类变量。子类一般会覆盖它;
+    # 不覆盖时所有实例共享这个空 list —— 但没人会去 append 它,所以安全。
+    required_env: list[str] = []
 
     def __init__(self) -> None:
         self.env = {key: os.environ.get(key, "") for key in self.required_env}

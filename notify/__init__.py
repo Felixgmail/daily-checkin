@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import os
+from html import escape
 
 import requests
 
@@ -46,10 +47,10 @@ def _telegram(title: str, content: str) -> str | None:
     if not token or not chat_id:
         return None
     try:
-        text = f"*{title}*\n\n```\n{content}\n```"
+        text = f"<b>{escape(title)}</b>\n\n<pre>{escape(content)}</pre>"
         r = requests.post(
             f"https://api.telegram.org/bot{token}/sendMessage",
-            json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+            json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
             timeout=TIMEOUT,
         )
         return f"Telegram: HTTP {r.status_code}"
