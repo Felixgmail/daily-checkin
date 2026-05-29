@@ -15,10 +15,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -51,6 +51,12 @@ jobs:
           # ===== api.uu6.top 多账号 =====
           UU6_A6732413_TOKEN: ${{ secrets.UU6_A6732413_TOKEN }}
           UU6_A6732413_USER_ID: ${{ secrets.UU6_A6732413_USER_ID }}
+          # ===== api.iamhc.cn 多账号 =====
+          IAMHC_LINDINGCHAN_TOKEN: ${{ secrets.IAMHC_LINDINGCHAN_TOKEN }}
+          IAMHC_LINDINGCHAN_USER_ID: ${{ secrets.IAMHC_LINDINGCHAN_USER_ID }}
+          # ===== tokenwork.app 多账号 =====
+          TOKENWORK_LINGUOJIN_TOKEN: ${{ secrets.TOKENWORK_LINGUOJIN_TOKEN }}
+          TOKENWORK_LINGUOJIN_USER_ID: ${{ secrets.TOKENWORK_LINGUOJIN_USER_ID }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
