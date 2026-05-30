@@ -61,6 +61,8 @@ jobs:
           # 新增账号: 加一对 AIROUTER_<账号名>_USERNAME 和 AIROUTER_<账号名>_PASSWORD,再在这里复制一对引用。
           AIROUTER_LINFANLONG_USERNAME: ${{ secrets.AIROUTER_LINFANLONG_USERNAME }}
           AIROUTER_LINFANLONG_PASSWORD: ${{ secrets.AIROUTER_LINFANLONG_PASSWORD }}
+          AIROUTER_HUANGJIQI_USERNAME: ${{ secrets.AIROUTER_HUANGJIQI_USERNAME }}
+          AIROUTER_HUANGJIQI_PASSWORD: ${{ secrets.AIROUTER_HUANGJIQI_PASSWORD }}
           # tokenwork.app 已移除: 站点开启了 Cloudflare Turnstile 人机验证,纯脚本签不了
           # ===== aiapi1.cc.cd 多账号 (标准 New API) =====
           AIAPI1_A6732413_TOKEN: ${{ secrets.AIAPI1_A6732413_TOKEN }}
