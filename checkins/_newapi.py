@@ -24,8 +24,21 @@ UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36")
 QUOTA_PER_USD = 500000
 
-# 对 5xx / 连接错误自动重试 2 次,间隔 1s → 2s
-_RETRY = Retry(total=2, backoff_factor=1, status_forcelist=[502, 503, 504])
+# 对超时 / 连接错误 / 5xx 自动重试 2 次,间隔 1s → 2s。
+# allowed_methods=None 表示所有方法都重试(含 POST)——签到 POST 是幂等的
+# (已签到只返回提示,不会重复发额度),所以重试安全;不加这个,默认白名单
+# 不含 POST,签到请求的 read timeout 不会被重试(52mx 偶发超时就是栽在这)。
+_RETRY = Retry(
+    total=2,
+    connect=2,
+    read=2,
+    backoff_factor=1,
+    status_forcelist=[502, 503, 504],
+    allowed_methods=None,
+)
+
+# 单次请求超时(秒)。放宽一点,容忍站点偶发的慢响应。
+_TIMEOUT = 30
 
 
 class NewAPITask(CheckinTask):
@@ -57,7 +70,7 @@ class NewAPITask(CheckinTask):
         session = self._make_session()
 
         # 1) 签到
-        ci_resp = session.post(f"{self.base_url}/api/user/checkin", timeout=20)
+        ci_resp = session.post(f"{self.base_url}/api/user/checkin", timeout=_TIMEOUT)
         if ci_resp.status_code != 200:
             return CheckinResult(self.name, success=False,
                                  message=f"签到请求失败 HTTP {ci_resp.status_code}: {ci_resp.text[:200]}")
@@ -76,7 +89,7 @@ class NewAPITask(CheckinTask):
         # 2) 查余额(失败不影响签到结果展示)
         balance_text = ""
         try:
-            self_resp = session.get(f"{self.base_url}/api/user/self", timeout=20)
+            self_resp = session.get(f"{self.base_url}/api/user/self", timeout=_TIMEOUT)
             if self_resp.status_code == 200:
                 data = self_resp.json().get("data") or {}
                 quota = data.get("quota", 0)
