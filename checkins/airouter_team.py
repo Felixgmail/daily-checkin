@@ -5,7 +5,7 @@
            JWT 约 24h 过期,因此不能像 New API 那样存长期 token,必须每次现登。
   - 签到: POST /api/user/reward-center/sign-in
            成功返回 200;已签到返回 HTTP 400 + code "already_signed_in"。
-  - 状态: GET /api/user/reward-center → referral / usageRebate 奖励信息。
+  - 余额: GET /api/user/dashboard → balance 字段(对应 dashboard 页 $XX.XX)。
 
 多账号配置:
    每个账号一对 Secret: AIROUTER_<账号名>_USERNAME + AIROUTER_<账号名>_PASSWORD
@@ -86,15 +86,13 @@ class AIRouterTask(CheckinTask):
         return token
 
     def _balance_text(self, session: requests.Session) -> str:
-        """查奖励信息(失败不影响签到结果展示)。"""
+        """查余额(失败不影响签到结果展示)。"""
         try:
-            resp = session.get(f"{BASE_URL}/api/user/reward-center", timeout=_TIMEOUT)
-            if resp.status_code != 200:
-                return ""
-            ref = (resp.json() or {}).get("referral") or {}
-            avail = ref.get("availableReward")
-            if avail is not None:
-                return f", 可用奖励 {avail}"
+            resp = session.get(f"{BASE_URL}/api/user/dashboard", timeout=_TIMEOUT)
+            if resp.status_code == 200:
+                balance = (resp.json() or {}).get("balance")
+                if balance is not None:
+                    return f", 余额 ${balance:.2f}"
         except Exception:
             pass
         return ""
