@@ -60,6 +60,11 @@ jobs:
           AIROUTER_LINFANLONG_USERNAME: ${{ secrets.AIROUTER_LINFANLONG_USERNAME }}
           AIROUTER_LINFANLONG_PASSWORD: ${{ secrets.AIROUTER_LINFANLONG_PASSWORD }}
           # tokenwork.app 已移除: 站点开启了 Cloudflare Turnstile 人机验证,纯脚本签不了
+          # ===== aiapi1.cc.cd 多账号 (标准 New API) =====
+          AIAPI1_A6732413_TOKEN: ${{ secrets.AIAPI1_A6732413_TOKEN }}
+          AIAPI1_A6732413_USER_ID: ${{ secrets.AIAPI1_A6732413_USER_ID }}
+          AIAPI1_LIYANGFENG_TOKEN: ${{ secrets.AIAPI1_LIYANGFENG_TOKEN }}
+          AIAPI1_LIYANGFENG_USER_ID: ${{ secrets.AIAPI1_LIYANGFENG_USER_ID }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}

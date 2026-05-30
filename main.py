@@ -80,6 +80,9 @@ def discover_tasks() -> list[CheckinTask]:
     每个模块支持两种导出方式:
     1. 模块顶层提供 `tasks: list[CheckinTask]` —— 直接用(可包含多账号实例)
     2. 否则扫描模块内的 CheckinTask 子类,每个类实例化一份
+
+    注意: 方式 1 的模块即使当前 `tasks` 为空(未配账号),也只算"没有任务",
+    不应回退到方式 2 去无参实例化那些 __init__ 需要必填参数的多账号类。
     """
     tasks: list[CheckinTask] = []
     for mod_info in pkgutil.iter_modules(checkins.__path__):
@@ -87,11 +90,14 @@ def discover_tasks() -> list[CheckinTask]:
             continue
         module = importlib.import_module(f"checkins.{mod_info.name}")
 
-        explicit = getattr(module, "tasks", None)
-        if isinstance(explicit, list) and explicit:
-            tasks.extend(t for t in explicit if isinstance(t, CheckinTask))
+        # 方式 1: 模块显式声明了 tasks 属性(哪怕是空 list,也代表"由本列表说了算")
+        if hasattr(module, "tasks"):
+            explicit = module.tasks
+            if isinstance(explicit, list):
+                tasks.extend(t for t in explicit if isinstance(t, CheckinTask))
             continue
 
+        # 方式 2: 没有 tasks 属性,扫描类并无参实例化
         for _, obj in inspect.getmembers(module, inspect.isclass):
             if (issubclass(obj, CheckinTask)
                     and obj is not CheckinTask
