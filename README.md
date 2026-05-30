@@ -21,7 +21,11 @@ daily-checkin/
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
 │   ├── m52mx_net.py           # 52mx.net
-│   └── uu6_top.py             # api.uu6.top
+│   ├── uu6_top.py             # api.uu6.top
+│   ├── iamhc_cn.py            # api.iamhc.cn
+│   ├── airouter_team.py       # ai.router.team
+│   ├── aiapi1_cccd.py         # aiapi1.cc.cd
+│   └── ai8online_dpdns_org.py # ai.8online.dpdns.org
 ├── notify/                    # 通知模块
 │   └── __init__.py
 ├── .github/workflows/
@@ -44,10 +48,19 @@ daily-checkin/
 | `M52MX_<账号名>_USER_ID` | 52mx.net 该账号的 user id |
 | `UU6_<账号名>_TOKEN` | api.uu6.top 该账号的 Access Token |
 | `UU6_<账号名>_USER_ID` | api.uu6.top 该账号的 user id |
+| `IAMHC_<账号名>_TOKEN` | api.iamhc.cn 该账号的 Access Token |
+| `IAMHC_<账号名>_USER_ID` | api.iamhc.cn 该账号的 user id |
+| `AIROUTER_<账号名>_USERNAME` | ai.router.team 该账号的用户名 |
+| `AIROUTER_<账号名>_PASSWORD` | ai.router.team 该账号的密码 |
+| `AIAPI1_<账号名>_TOKEN` | aiapi1.cc.cd 该账号的 Access Token |
+| `AIAPI1_<账号名>_USER_ID` | aiapi1.cc.cd 该账号的 user id |
+| `AI8ONLINE_<账号名>_USERNAME` | ai.8online.dpdns.org 该账号的用户名 |
+| `AI8ONLINE_<账号名>_PASSWORD` | ai.8online.dpdns.org 该账号的密码 |
 
-**多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字)。例如:
+**多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。例如:
 - makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
 - 52mx 账号 linfangji: `M52MX_LINFANGJI_TOKEN` + `M52MX_LINFANGJI_USER_ID`
+- ai.8online 账号 lindingchan_f4da: `AI8ONLINE_LINDINGCHAN_F4DA_USERNAME` + `AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD`
 
 加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 

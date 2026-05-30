@@ -67,6 +67,11 @@ jobs:
           AIAPI1_A6732413_USER_ID: ${{ secrets.AIAPI1_A6732413_USER_ID }}
           AIAPI1_LIYANGFENG_TOKEN: ${{ secrets.AIAPI1_LIYANGFENG_TOKEN }}
           AIAPI1_LIYANGFENG_USER_ID: ${{ secrets.AIAPI1_LIYANGFENG_USER_ID }}
+          # ===== ai.8online.dpdns.org 多账号 (Codex API Platform) =====
+          # 这个站点不是 New API: 用账号密码登录换 JWT 签到(JWT 7天过期,存不了长期 token)。
+          # 新增账号: 加一对 AI8ONLINE_<账号名>_USERNAME 和 AI8ONLINE_<账号名>_PASSWORD,再在这里复制一对引用。
+          AI8ONLINE_LINDINGCHAN_F4DA_USERNAME: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_USERNAME }}
+          AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
