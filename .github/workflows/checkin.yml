@@ -72,6 +72,9 @@ jobs:
           # 新增账号: 加一对 AI8ONLINE_<账号名>_USERNAME 和 AI8ONLINE_<账号名>_PASSWORD,再在这里复制一对引用。
           AI8ONLINE_LINDINGCHAN_F4DA_USERNAME: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_USERNAME }}
           AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD }}
+          # ===== ai.chuyel.cn 多账号 (标准 New API) =====
+          AICHUYEL_BUTUISEDECHENGNUO_TOKEN: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_TOKEN }}
+          AICHUYEL_BUTUISEDECHENGNUO_USER_ID: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_USER_ID }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
