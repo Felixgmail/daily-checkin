@@ -7,6 +7,10 @@ venv/
 .env
 .env.*
 
+# dialoguedui 轮转 token 落盘文件(含 refresh_token,绝不入库)
+rotated_tokens.env
+rotated_dedup.env
+
 # IDE
 .vscode/
 .idea/

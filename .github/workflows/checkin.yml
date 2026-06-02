@@ -75,6 +75,14 @@ jobs:
           # ===== ai.chuyel.cn 多账号 (标准 New API) =====
           AICHUYEL_BUTUISEDECHENGNUO_TOKEN: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_TOKEN }}
           AICHUYEL_BUTUISEDECHENGNUO_USER_ID: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_USER_ID }}
+          # ===== token.dialoguedui.com 多账号 (小怼Code, Turnstile + refresh_token 轮转) =====
+          # 登录有 Turnstile 人机验证,只能靠 refresh_token 续期。refresh_token 一次性轮转,
+          # 跑完由下方"回写"step 用 GH_PAT 写回新值。ACCESS_TOKEN/EXP 由脚本自动维护,无需手动配。
+          # 新增账号: 加 DIALOGUEDUI_<账号>_REFRESH_TOKEN,再在这里复制一行引用即可。
+          DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN }}
+          DIALOGUEDUI_LINDINGCHAN_ACCESS_TOKEN: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_ACCESS_TOKEN }}
+          DIALOGUEDUI_LINDINGCHAN_ACCESS_EXP: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_ACCESS_EXP }}
+          ROTATED_TOKENS_FILE: rotated_tokens.env
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
@@ -82,3 +90,33 @@ jobs:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
         run: python main.py
+
+      # token.dialoguedui.com 的 refresh_token 是一次性轮转的: 上一步签到时换出了
+      # 新 token 并写入 rotated_tokens.env, 这里用 GH_PAT 把它回写到 Secret。
+      # if: always() 保证即使签到 step 标红(continue-on-error 下不会,但保险)也回写,
+      # 否则新 rt 丢失 → 次日链条断裂。需要 GH_PAT 有本仓库 Secrets 读写权限。
+      - name: 回写轮转的 refresh_token (dialoguedui)
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          [ -s rotated_tokens.env ] || { echo "无轮转 token 需回写"; exit 0; }
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::检测到轮转 token 但未配置 GH_PAT, 无法回写, 链条将断裂"
+            exit 1
+          fi
+          # 多次轮转时文件可能有重复 key, 用 awk 保留每个 key 最后一次出现的值
+          awk -F= '{ kv[$1]=$0 } END { for (k in kv) print kv[k] }' \
+            rotated_tokens.env > rotated_dedup.env
+          for attempt in 1 2; do
+            if gh secret set --env-file rotated_dedup.env; then
+              # L2 读回校验: 确认 secret 确实存在(updatedAt 由 GitHub 维护)
+              if gh secret list | grep -q DIALOGUEDUI_; then
+                echo "refresh_token 回写成功 (第 $attempt 次尝试)"
+                exit 0
+              fi
+            fi
+            echo "回写第 $attempt 次失败, 重试..."; sleep 3
+          done
+          echo "::error::refresh_token 回写失败, 链条可能断裂, 请检查 GH_PAT 权限"
+          exit 1

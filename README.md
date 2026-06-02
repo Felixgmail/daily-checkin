@@ -25,7 +25,9 @@ daily-checkin/
 │   ├── iamhc_cn.py            # api.iamhc.cn
 │   ├── airouter_team.py       # ai.router.team
 │   ├── aiapi1_cccd.py         # aiapi1.cc.cd
-│   └── ai8online_dpdns_org.py # ai.8online.dpdns.org
+│   ├── ai8online_dpdns_org.py # ai.8online.dpdns.org
+│   ├── aichuyel_cn.py         # ai.chuyel.cn
+│   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
 ├── notify/                    # 通知模块
 │   └── __init__.py
 ├── .github/workflows/
@@ -56,6 +58,8 @@ daily-checkin/
 | `AIAPI1_<账号名>_USER_ID` | aiapi1.cc.cd 该账号的 user id |
 | `AI8ONLINE_<账号名>_USERNAME` | ai.8online.dpdns.org 该账号的用户名 |
 | `AI8ONLINE_<账号名>_PASSWORD` | ai.8online.dpdns.org 该账号的密码 |
+| `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
+| `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
 **多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。例如:
 - makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
@@ -66,6 +70,31 @@ daily-checkin/
 
 > 💡 接入新的 New API 站点(只要响应头有 `X-New-Api-Version` 或 meta `generator=new-api`),
 > 在 `checkins/` 下抄一份 `m52mx_net.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
+
+### token.dialoguedui.com(小怼Code)—— 特殊:Turnstile + refresh_token 轮转
+
+这个站登录有 **Cloudflare Turnstile 人机验证**,脚本无法自动登录,所以**不能用账号密码**。
+它的鉴权是 JWT access_token(24h 过期),只能靠 **refresh_token** 续期(`/api/v1/auth/refresh`,不过 Turnstile)。
+签到接口是独立站点 `POST /checkin/api/checkin`(带 `Authorization: Bearer <access_token>`)。
+
+**关键:refresh_token 一次性轮转** —— 用一次就换新的、旧的立即失效。所以需要两个东西:
+
+1. **`DIALOGUEDUI_<账号名>_REFRESH_TOKEN`**:首次的 refresh_token。获取方法:
+   浏览器登录 `https://token.dialoguedui.com` → F12 → Console 执行
+   `localStorage.getItem('refresh_token')`,把输出(`rt_` 开头那串)填进 Secret。
+2. **`GH_PAT`**:一个有本仓库 **Secrets 读写权限**的 fine-grained PAT
+   (权限:`Secrets: Read and write` + `Metadata: Read`)。
+   workflow 跑完会用它把轮转出的新 refresh_token 自动写回 Secret(否则次日链条断裂)。
+
+> `DIALOGUEDUI_<账号名>_ACCESS_TOKEN` / `_ACCESS_EXP` 这两个 Secret **不用手动配**,
+> 由脚本自动维护(用于 access_token 未过期时直接签到、跳过 refresh,减少 rt 轮转)。
+
+**轮转加固**(让长期跑更稳):
+- 存量 access_token 没过期就直接签到,**不消费 refresh_token**(正常一天最多轮转一次)。
+- 拿到新 rt 立即落盘 `rotated_tokens.env`(在签到之前),签到失败也不丢 rt。
+- workflow 回写带读回校验 + 重试;回写失败会让该 step 标红。
+- refresh 返回 401(rt 彻底失效,如多端登录互相挤掉)→ 签到结果会标注链断,
+  此时按上面方法**重新登录取一次 refresh_token** 更新 Secret 即可(1 分钟操作)。
 
 ### 通知通道(任选其一或多个,不配则不推送)
 
