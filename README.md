@@ -17,10 +17,9 @@ daily-checkin/
 ├── main.py                    # 入口: 发现任务 → 执行 → 汇总 → 通知
 ├── checkins/                  # 签到任务目录(新增站点放这里)
 │   ├── base.py                # 任务基类 CheckinTask
-│   ├── _newapi.py             # New API 通用基类(供 makelove/52mx 等站点复用)
+│   ├── _newapi.py             # New API 通用基类(供 makelove/uu6 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
-│   ├── m52mx_net.py           # 52mx.net
 │   ├── uu6_top.py             # api.uu6.top
 │   ├── iamhc_cn.py            # api.iamhc.cn
 │   ├── airouter_team.py       # ai.router.team
@@ -46,8 +45,6 @@ daily-checkin/
 |---|---|
 | `MAKELOVE_<账号名>_TOKEN` | newapi.makelove.cloud 该账号的 Access Token |
 | `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
-| `M52MX_<账号名>_TOKEN` | 52mx.net 该账号的 Access Token |
-| `M52MX_<账号名>_USER_ID` | 52mx.net 该账号的 user id |
 | `UU6_<账号名>_TOKEN` | api.uu6.top 该账号的 Access Token |
 | `UU6_<账号名>_USER_ID` | api.uu6.top 该账号的 user id |
 | `IAMHC_<账号名>_TOKEN` | api.iamhc.cn 该账号的 Access Token |
@@ -63,13 +60,12 @@ daily-checkin/
 
 **多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。例如:
 - makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
-- 52mx 账号 linfangji: `M52MX_LINFANGJI_TOKEN` + `M52MX_LINFANGJI_USER_ID`
 - ai.8online 账号 lindingchan_f4da: `AI8ONLINE_LINDINGCHAN_F4DA_USERNAME` + `AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD`
 
 加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 
 > 💡 接入新的 New API 站点(只要响应头有 `X-New-Api-Version` 或 meta `generator=new-api`),
-> 在 `checkins/` 下抄一份 `m52mx_net.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
+> 在 `checkins/` 下抄一份 `uu6_top.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
 
 ### token.dialoguedui.com(小怼Code)—— 特殊:Turnstile + refresh_token 轮转
 
@@ -127,7 +123,7 @@ daily-checkin/
 1. **启动随机延迟 0-40 分钟** —— cron 在 8:00 唤醒,实际开跑在 8:00-8:40 之间随机
 2. **同一站点账号串行 + 间隔 3-15 分钟随机** —— 例如 makelove 三个账号不会同时打,每两个之间等 3-15 分钟
 3. **同站账号顺序随机** —— 每天先签谁后签谁不固定
-4. **不同站点并行** —— makelove / 52mx / uu6 互不阻塞,各自按各自节奏走;同一账号(如 a6732413)在不同站点是同时签到的,因为风控只在同站内生效
+4. **不同站点并行** —— makelove / uu6 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
 
 参数定义在 `main.py` 顶部的 `STARTUP_DELAY_MAX` / `SAMEMSITE_GAP_MIN` / `SAMEMSITE_GAP_MAX`。
 
@@ -137,7 +133,7 @@ daily-checkin/
 **预算估算**(GitHub Actions 私有仓库免费 2000 分钟/月):
 - 站点并行,所以 job 时长 ≈ 启动延迟(0-40 分) + max(各站串行耗时) + 收尾,与账号总数关系不大
 - 当前最大单站是 makelove 的 3 账号 → 最坏 ~30 分钟同站间隔,加启动延迟 job 上限约 70 分钟
-- 6 个账号(3 makelove + 2 52mx + 1 uu6)实际平均每天 ~40 分钟,每月 ~1200 分钟,远在 2000 分钟额度内
+- 多账号实际平均每天 ~40 分钟,每月 ~1200 分钟,远在 2000 分钟额度内
 
 ## 添加新的签到站点
 
@@ -176,7 +172,7 @@ MAKELOVE_A6732413_TOKEN='xxx' MAKELOVE_A6732413_USER_ID='952' python main.py
 
 ## 凭据维护
 
-**New API 站点(makelove / 52mx 等)的 Access Token 是长效的,不会过期**,只在以下情况需要更新:
+**New API 站点(makelove / uu6 等)的 Access Token 是长效的,不会过期**,只在以下情况需要更新:
 1. 你在网站个人设置里**手动重置了 token**
 2. 站点管理员升级或重置了 token(极少发生)
 
@@ -215,7 +211,3 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
   2. session cookie 绑定登录 IP, 跨 IP 复用 cookie 返回 401 "无权进行此操作"
 - **Access Token 不受此风控影响**(token 鉴权不绑 IP),所以本框架统一用 token
 
-### 52mx.net (`checkins/m52mx_net.py`)
-版本 `v1.0.0-rc.8`,纯 New API 无定制。
-- 登录接口未发现 IP 风控,但仍统一用 access token 与 makelove 保持一致
-- 注意 Secret 名前缀是 `M52MX_` —— GitHub Secret 名不允许数字开头
