@@ -50,14 +50,6 @@ jobs:
           MAKELOVE_FANGZHONGHUA_USER_ID: ${{ secrets.MAKELOVE_FANGZHONGHUA_USER_ID }}
           MAKELOVE_CHENFANGJIAN_TOKEN: ${{ secrets.MAKELOVE_CHENFANGJIAN_TOKEN }}
           MAKELOVE_CHENFANGJIAN_USER_ID: ${{ secrets.MAKELOVE_CHENFANGJIAN_USER_ID }}
-          # ===== api.uu6.top 多账号 =====
-          UU6_A6732413_TOKEN: ${{ secrets.UU6_A6732413_TOKEN }}
-          UU6_A6732413_USER_ID: ${{ secrets.UU6_A6732413_USER_ID }}
-          # ===== api.iamhc.cn 多账号 =====
-          IAMHC_LINDINGCHAN_TOKEN: ${{ secrets.IAMHC_LINDINGCHAN_TOKEN }}
-          IAMHC_LINDINGCHAN_USER_ID: ${{ secrets.IAMHC_LINDINGCHAN_USER_ID }}
-          IAMHC_FELIXSSFDF_TOKEN: ${{ secrets.IAMHC_FELIXSSFDF_TOKEN }}
-          IAMHC_FELIXSSFDF_USER_ID: ${{ secrets.IAMHC_FELIXSSFDF_USER_ID }}
           # ===== ai.router.team 多账号 =====
           # 这个站点不是 New API: 用账号密码登录换 JWT 签到(JWT 24h 过期,存不了长期 token)。
           # 新增账号: 加一对 AIROUTER_<账号名>_USERNAME 和 AIROUTER_<账号名>_PASSWORD,再在这里复制一对引用。

@@ -20,8 +20,6 @@ daily-checkin/
 │   ├── _newapi.py             # New API 通用基类(供 makelove/uu6 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
-│   ├── uu6_top.py             # api.uu6.top
-│   ├── iamhc_cn.py            # api.iamhc.cn
 │   ├── airouter_team.py       # ai.router.team
 │   ├── aiapi1_cccd.py         # aiapi1.cc.cd
 │   ├── ai8online_dpdns_org.py # ai.8online.dpdns.org
@@ -45,10 +43,6 @@ daily-checkin/
 |---|---|
 | `MAKELOVE_<账号名>_TOKEN` | newapi.makelove.cloud 该账号的 Access Token |
 | `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
-| `UU6_<账号名>_TOKEN` | api.uu6.top 该账号的 Access Token |
-| `UU6_<账号名>_USER_ID` | api.uu6.top 该账号的 user id |
-| `IAMHC_<账号名>_TOKEN` | api.iamhc.cn 该账号的 Access Token |
-| `IAMHC_<账号名>_USER_ID` | api.iamhc.cn 该账号的 user id |
 | `AIROUTER_<账号名>_USERNAME` | ai.router.team 该账号的用户名 |
 | `AIROUTER_<账号名>_PASSWORD` | ai.router.team 该账号的密码 |
 | `AIAPI1_<账号名>_TOKEN` | aiapi1.cc.cd 该账号的 Access Token |
@@ -65,7 +59,7 @@ daily-checkin/
 加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 
 > 💡 接入新的 New API 站点(只要响应头有 `X-New-Api-Version` 或 meta `generator=new-api`),
-> 在 `checkins/` 下抄一份 `uu6_top.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
+> 在 `checkins/` 下抄一份 `makelove_cloud.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
 
 ### token.dialoguedui.com(小怼Code)—— 特殊:Turnstile + refresh_token 轮转
 
