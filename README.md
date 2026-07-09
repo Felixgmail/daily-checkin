@@ -20,9 +20,6 @@ daily-checkin/
 │   ├── _newapi.py             # New API 通用基类(供 makelove/uu6 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
-│   ├── airouter_team.py       # ai.router.team
-│   ├── aiapi1_cccd.py         # aiapi1.cc.cd
-│   ├── ai8online_dpdns_org.py # ai.8online.dpdns.org
 │   ├── aichuyel_cn.py         # ai.chuyel.cn
 │   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
 ├── notify/                    # 通知模块
@@ -43,18 +40,13 @@ daily-checkin/
 |---|---|
 | `MAKELOVE_<账号名>_TOKEN` | newapi.makelove.cloud 该账号的 Access Token |
 | `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
-| `AIROUTER_<账号名>_USERNAME` | ai.router.team 该账号的用户名 |
-| `AIROUTER_<账号名>_PASSWORD` | ai.router.team 该账号的密码 |
-| `AIAPI1_<账号名>_TOKEN` | aiapi1.cc.cd 该账号的 Access Token |
-| `AIAPI1_<账号名>_USER_ID` | aiapi1.cc.cd 该账号的 user id |
-| `AI8ONLINE_<账号名>_USERNAME` | ai.8online.dpdns.org 该账号的用户名 |
-| `AI8ONLINE_<账号名>_PASSWORD` | ai.8online.dpdns.org 该账号的密码 |
+| `AICHUYEL_<账号名>_TOKEN` | ai.chuyel.cn 该账号的 Access Token |
+| `AICHUYEL_<账号名>_USER_ID` | ai.chuyel.cn 该账号的 user id |
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
 | `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
 **多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。例如:
 - makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
-- ai.8online 账号 lindingchan_f4da: `AI8ONLINE_LINDINGCHAN_F4DA_USERNAME` + `AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD`
 
 加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 

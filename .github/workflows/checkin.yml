@@ -50,22 +50,7 @@ jobs:
           MAKELOVE_FANGZHONGHUA_USER_ID: ${{ secrets.MAKELOVE_FANGZHONGHUA_USER_ID }}
           MAKELOVE_CHENFANGJIAN_TOKEN: ${{ secrets.MAKELOVE_CHENFANGJIAN_TOKEN }}
           MAKELOVE_CHENFANGJIAN_USER_ID: ${{ secrets.MAKELOVE_CHENFANGJIAN_USER_ID }}
-          # ===== ai.router.team 多账号 =====
-          # 这个站点不是 New API: 用账号密码登录换 JWT 签到(JWT 24h 过期,存不了长期 token)。
-          # 新增账号: 加一对 AIROUTER_<账号名>_USERNAME 和 AIROUTER_<账号名>_PASSWORD,再在这里复制一对引用。
-          AIROUTER_LINFANLONG_USERNAME: ${{ secrets.AIROUTER_LINFANLONG_USERNAME }}
-          AIROUTER_LINFANLONG_PASSWORD: ${{ secrets.AIROUTER_LINFANLONG_PASSWORD }}
-          AIROUTER_HUANGJIQI_USERNAME: ${{ secrets.AIROUTER_HUANGJIQI_USERNAME }}
-          AIROUTER_HUANGJIQI_PASSWORD: ${{ secrets.AIROUTER_HUANGJIQI_PASSWORD }}
-          # tokenwork.app 已移除: 站点开启了 Cloudflare Turnstile 人机验证,纯脚本签不了
-          # ===== aiapi1.cc.cd 多账号 (标准 New API) =====
-          AIAPI1_DGDG2255_TOKEN: ${{ secrets.AIAPI1_DGDG2255_TOKEN }}
-          AIAPI1_DGDG2255_USER_ID: ${{ secrets.AIAPI1_DGDG2255_USER_ID }}
-          # ===== ai.8online.dpdns.org 多账号 (Codex API Platform) =====
-          # 这个站点不是 New API: 用账号密码登录换 JWT 签到(JWT 7天过期,存不了长期 token)。
-          # 新增账号: 加一对 AI8ONLINE_<账号名>_USERNAME 和 AI8ONLINE_<账号名>_PASSWORD,再在这里复制一对引用。
-          AI8ONLINE_LINDINGCHAN_F4DA_USERNAME: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_USERNAME }}
-          AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD: ${{ secrets.AI8ONLINE_LINDINGCHAN_F4DA_PASSWORD }}
+          # tokenwork.app / ai.router.team / aiapi1.cc.cd / ai.8online 已移除
           # ===== ai.chuyel.cn 多账号 (标准 New API) =====
           AICHUYEL_BUTUISEDECHENGNUO_TOKEN: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_TOKEN }}
           AICHUYEL_BUTUISEDECHENGNUO_USER_ID: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_USER_ID }}
