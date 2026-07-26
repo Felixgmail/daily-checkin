@@ -17,10 +17,11 @@ daily-checkin/
 ├── main.py                    # 入口: 发现任务 → 执行 → 汇总 → 通知
 ├── checkins/                  # 签到任务目录(新增站点放这里)
 │   ├── base.py                # 任务基类 CheckinTask
-│   ├── _newapi.py             # New API 通用基类(供 makelove/uu6 等站点复用)
+│   ├── _newapi.py             # New API 通用基类(供 makelove/jiuuij 等站点复用)
 │   ├── self_check.py          # 自检任务(验证框架,可删)
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
 │   ├── aichuyel_cn.py         # ai.chuyel.cn
+│   ├── jiuuij_de5_net.py      # jiuuij.de5.net
 │   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
 ├── notify/                    # 通知模块
 │   └── __init__.py
@@ -42,6 +43,8 @@ daily-checkin/
 | `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
 | `AICHUYEL_<账号名>_TOKEN` | ai.chuyel.cn 该账号的 Access Token |
 | `AICHUYEL_<账号名>_USER_ID` | ai.chuyel.cn 该账号的 user id |
+| `JIUUIJDE5_<账号名>_TOKEN` | jiuuij.de5.net 该账号的 Access Token |
+| `JIUUIJDE5_<账号名>_USER_ID` | jiuuij.de5.net 该账号的 user id |
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
 | `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
@@ -109,7 +112,7 @@ daily-checkin/
 1. **启动随机延迟 0-40 分钟** —— cron 在 8:00 唤醒,实际开跑在 8:00-8:40 之间随机
 2. **同一站点账号串行 + 间隔 3-15 分钟随机** —— 例如 makelove 三个账号不会同时打,每两个之间等 3-15 分钟
 3. **同站账号顺序随机** —— 每天先签谁后签谁不固定
-4. **不同站点并行** —— makelove / uu6 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
+4. **不同站点并行** —— makelove / jiuuij 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
 
 参数定义在 `main.py` 顶部的 `STARTUP_DELAY_MAX` / `SAMEMSITE_GAP_MIN` / `SAMEMSITE_GAP_MAX`。
 
@@ -173,6 +176,39 @@ A: GitHub Actions 的免费 cron 高峰期可能延迟,这是平台行为。如�
 
 **Q: 仓库要不要保持 active?**
 A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,需要 push 一个 commit 来唤醒。可以加个每月自动提交的 workflow 续命,但通常你手动改点东西就够了。
+
+## 公开仓库安全加固
+
+本仓库 **可以安全公开**:所有凭据都在 GitHub Actions Secrets 里,不进代码、不进日志、不进 git 历史(`.gitignore` 已拦轮转落盘文件)。
+公开后他人无法读取你的 Secrets,但可以发起 PR 触发 workflow,所以必须把 Actions 入口收紧,防止有人借 workflow 在你的仓库里执行任意命令(尤其是 dialoguedui 回写那步带 `GH_PAT`)。
+
+公开前 **必须** 在仓库 **Settings** 里设置:
+
+1. **Settings → Actions → General → Workflow permissions**:
+   - 设为 **Read repository contents and packages permissions**(默认只读),或至少不要给 **Read and write**。
+   - 关闭 **Allow GitHub Actions to create and approve pull requests**。
+
+2. **Settings → Actions → General → Fork pull request workflows**:
+   选 **Run workflows from fork pull requests** = **Require approval for all external contributors**,
+   外部 PR 的 workflow 不会自动跑,需你审批 —— 这一步是关键,能挡住 PR 投毒触发 `GH_PAT`。
+
+3. **Settings → Branches → Branch protection rules → `main`**:
+   - **Require a pull request before merging** + **Require approvals**(至少 1)
+   - **Require status checks to pass** 勾上
+   - 限制 **Restrict who can push to matching branches**,防止他人直接 push workflow 改动。
+
+4. **`GH_PAT` 改用 fine-grained PAT**(若还没):
+   - 限定只授权本仓库
+   - 权限:`Secrets: Read and write` + `Metadata: Read`,不勾 `Contents: write` 等多余权限。
+   - 定期轮换。
+
+5. 还可加 `.github/workflows` 的 **CODEOWNERS**(`.github/CODEOWNERS`),对 workflow 改动强制 review:
+   ```
+   /.github/workflows/  @你的用户名
+   ```
+
+> 确认历史无敏感泄露:仓库历史已扫描,无硬编码令牌。只要 Secrets 不被有写权限者泄露,公开安全。
+
 
 ---
 
