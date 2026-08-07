@@ -22,6 +22,7 @@ daily-checkin/
 │   ├── makelove_cloud.py      # newapi.makelove.cloud
 │   ├── aichuyel_cn.py         # ai.chuyel.cn
 │   ├── jiuuij_de5_net.py      # jiuuij.de5.net
+│   ├── hcnsec_cn.py           # api.hcnsec.cn
 │   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
 ├── notify/                    # 通知模块
 │   └── __init__.py
@@ -45,6 +46,8 @@ daily-checkin/
 | `AICHUYEL_<账号名>_USER_ID` | ai.chuyel.cn 该账号的 user id |
 | `JIUUIJDE5_<账号名>_TOKEN` | jiuuij.de5.net 该账号的 Access Token |
 | `JIUUIJDE5_<账号名>_USER_ID` | jiuuij.de5.net 该账号的 user id |
+| `HCNSEC_<账号名>_TOKEN` | api.hcnsec.cn 该账号的 Access Token(One API) |
+| `HCNSEC_<账号名>_USER_ID` | api.hcnsec.cn 该账号的 user id |
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
 | `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
@@ -112,7 +115,7 @@ daily-checkin/
 1. **启动随机延迟 0-40 分钟** —— cron 在 8:00 唤醒,实际开跑在 8:00-8:40 之间随机
 2. **同一站点账号串行 + 间隔 3-15 分钟随机** —— 例如 makelove 三个账号不会同时打,每两个之间等 3-15 分钟
 3. **同站账号顺序随机** —— 每天先签谁后签谁不固定
-4. **不同站点并行** —— makelove / jiuuij 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
+4. **不同站点并行** —— makelove / jiuuij / hcnsec 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
 
 参数定义在 `main.py` 顶部的 `STARTUP_DELAY_MAX` / `SAMEMSITE_GAP_MIN` / `SAMEMSITE_GAP_MAX`。
 

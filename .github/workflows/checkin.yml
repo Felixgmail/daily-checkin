@@ -57,6 +57,11 @@ jobs:
           # ===== jiuuij.de5.net 多账号 (标准 New API) =====
           JIUUIJDE5_LINUXDO21000_TOKEN: ${{ secrets.JIUUIJDE5_LINUXDO21000_TOKEN }}
           JIUUIJDE5_LINUXDO21000_USER_ID: ${{ secrets.JIUUIJDE5_LINUXDO21000_USER_ID }}
+          # ===== api.hcnsec.cn 多账号 (One API / New API) =====
+          HCNSEC_LINDINGCHAN_TOKEN: ${{ secrets.HCNSEC_LINDINGCHAN_TOKEN }}
+          HCNSEC_LINDINGCHAN_USER_ID: ${{ secrets.HCNSEC_LINDINGCHAN_USER_ID }}
+          HCNSEC_FELIXSSFDF_TOKEN: ${{ secrets.HCNSEC_FELIXSSFDF_TOKEN }}
+          HCNSEC_FELIXSSFDF_USER_ID: ${{ secrets.HCNSEC_FELIXSSFDF_USER_ID }}
           # ===== token.dialoguedui.com 多账号 (小怼Code, Turnstile + refresh_token 轮转) =====
           # 登录有 Turnstile 人机验证,只能靠 refresh_token 续期。refresh_token 一次性轮转,
           # 跑完由下方"回写"step 用 GH_PAT 写回新值。ACCESS_TOKEN/EXP 由脚本自动维护,无需手动配。
