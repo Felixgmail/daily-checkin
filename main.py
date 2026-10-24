@@ -43,7 +43,7 @@ STARTUP_DELAY_MAX = 40 * 60       # 启动随机延迟上限: 40 分钟
 SAMEMSITE_GAP_MIN = 3 * 60        # 同站账号最小间隔: 3 分钟
 SAMEMSITE_GAP_MAX = 15 * 60       # 同站账号最大间隔: 15 分钟
 
-# 任务 name 形如 "makelove.cloud[a6732413]",取 [ 前作为站点标识
+# 任务 name 形如 "站点[账号]",取 [ 前作为站点标识
 _SITE_RE = re.compile(r"^([^\[]+?)(?:\[|$)")
 
 # 站内任务跑前等待用 secrets.SystemRandom 取真随机(避免可预测)
@@ -107,7 +107,7 @@ def discover_tasks() -> list[CheckinTask]:
 
 
 def site_of(task: CheckinTask) -> str:
-    """从任务 name 提取站点标识 (例如 'makelove.cloud[a6732413]' → 'makelove.cloud')。
+    """从任务 name 提取站点标识 (例如 'johndoe.ai[alice]' → 'johndoe.ai')。
     没有 [ 的任务(例如 self_check)整体作为独立站点。"""
     m = _SITE_RE.match(task.name)
     return m.group(1).strip() if m else task.name

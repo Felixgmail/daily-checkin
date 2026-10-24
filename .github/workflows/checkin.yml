@@ -31,37 +31,9 @@ jobs:
         # 想要失败标红可以删掉 continue-on-error
         continue-on-error: true
         env:
-          # ===== makelove.cloud 多账号 =====
-          # 新增账号: 在 Secrets 里加一对 MAKELOVE_<账号名>_TOKEN 和 MAKELOVE_<账号名>_USER_ID,
-          # 然后在这里复制一对引用即可。脚本会自动发现并签到。
-          MAKELOVE_A6732413_TOKEN: ${{ secrets.MAKELOVE_A6732413_TOKEN }}
-          MAKELOVE_A6732413_USER_ID: ${{ secrets.MAKELOVE_A6732413_USER_ID }}
-          MAKELOVE_JDUHG82736_TOKEN: ${{ secrets.MAKELOVE_JDUHG82736_TOKEN }}
-          MAKELOVE_JDUHG82736_USER_ID: ${{ secrets.MAKELOVE_JDUHG82736_USER_ID }}
-          MAKELOVE_ZHANGGUOHUA_TOKEN: ${{ secrets.MAKELOVE_ZHANGGUOHUA_TOKEN }}
-          MAKELOVE_ZHANGGUOHUA_USER_ID: ${{ secrets.MAKELOVE_ZHANGGUOHUA_USER_ID }}
-          MAKELOVE_LIYANGFENG_TOKEN: ${{ secrets.MAKELOVE_LIYANGFENG_TOKEN }}
-          MAKELOVE_LIYANGFENG_USER_ID: ${{ secrets.MAKELOVE_LIYANGFENG_USER_ID }}
-          MAKELOVE_GUWENBO_TOKEN: ${{ secrets.MAKELOVE_GUWENBO_TOKEN }}
-          MAKELOVE_GUWENBO_USER_ID: ${{ secrets.MAKELOVE_GUWENBO_USER_ID }}
-          MAKELOVE_JIGUOFANG_TOKEN: ${{ secrets.MAKELOVE_JIGUOFANG_TOKEN }}
-          MAKELOVE_JIGUOFANG_USER_ID: ${{ secrets.MAKELOVE_JIGUOFANG_USER_ID }}
-          MAKELOVE_FANGZHONGHUA_TOKEN: ${{ secrets.MAKELOVE_FANGZHONGHUA_TOKEN }}
-          MAKELOVE_FANGZHONGHUA_USER_ID: ${{ secrets.MAKELOVE_FANGZHONGHUA_USER_ID }}
-          MAKELOVE_CHENFANGJIAN_TOKEN: ${{ secrets.MAKELOVE_CHENFANGJIAN_TOKEN }}
-          MAKELOVE_CHENFANGJIAN_USER_ID: ${{ secrets.MAKELOVE_CHENFANGJIAN_USER_ID }}
           # tokenwork.app / ai.router.team / aiapi1.cc.cd / ai.8online 已移除
-          # ===== ai.chuyel.cn 多账号 (标准 New API) =====
-          AICHUYEL_BUTUISEDECHENGNUO_TOKEN: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_TOKEN }}
-          AICHUYEL_BUTUISEDECHENGNUO_USER_ID: ${{ secrets.AICHUYEL_BUTUISEDECHENGNUO_USER_ID }}
-          # ===== jiuuij.de5.net 多账号 (标准 New API) =====
-          JIUUIJDE5_LINUXDO21000_TOKEN: ${{ secrets.JIUUIJDE5_LINUXDO21000_TOKEN }}
-          JIUUIJDE5_LINUXDO21000_USER_ID: ${{ secrets.JIUUIJDE5_LINUXDO21000_USER_ID }}
-          # ===== api.hcnsec.cn 多账号 (One API / New API) =====
-          HCNSEC_LINDINGCHAN_TOKEN: ${{ secrets.HCNSEC_LINDINGCHAN_TOKEN }}
-          HCNSEC_LINDINGCHAN_USER_ID: ${{ secrets.HCNSEC_LINDINGCHAN_USER_ID }}
-          HCNSEC_FELIXSSFDF_TOKEN: ${{ secrets.HCNSEC_FELIXSSFDF_TOKEN }}
-          HCNSEC_FELIXSSFDF_USER_ID: ${{ secrets.HCNSEC_FELIXSSFDF_USER_ID }}
+          # makelove.cloud / api.hcnsec.cn (签到接口已加 Turnstile 人机验证,脚本无法通过)
+          # ai.chuyel.cn (站点长期 522) / jiuuij.de5.net (证书域名不匹配) 已移除
           # ===== token.dialoguedui.com 多账号 (小怼Code, Turnstile + refresh_token 轮转) =====
           # 登录有 Turnstile 人机验证,只能靠 refresh_token 续期。refresh_token 一次性轮转,
           # 跑完由下方"回写"step 用 GH_PAT 写回新值。ACCESS_TOKEN/EXP 由脚本自动维护,无需手动配。

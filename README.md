@@ -17,12 +17,6 @@ daily-checkin/
 ├── main.py                    # 入口: 发现任务 → 执行 → 汇总 → 通知
 ├── checkins/                  # 签到任务目录(新增站点放这里)
 │   ├── base.py                # 任务基类 CheckinTask
-│   ├── _newapi.py             # New API 通用基类(供 makelove/jiuuij 等站点复用)
-│   ├── self_check.py          # 自检任务(验证框架,可删)
-│   ├── makelove_cloud.py      # newapi.makelove.cloud
-│   ├── aichuyel_cn.py         # ai.chuyel.cn
-│   ├── jiuuij_de5_net.py      # jiuuij.de5.net
-│   ├── hcnsec_cn.py           # api.hcnsec.cn
 │   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
 ├── notify/                    # 通知模块
 │   └── __init__.py
@@ -40,24 +34,12 @@ daily-checkin/
 
 | Secret 名 | 说明 |
 |---|---|
-| `MAKELOVE_<账号名>_TOKEN` | newapi.makelove.cloud 该账号的 Access Token |
-| `MAKELOVE_<账号名>_USER_ID` | newapi.makelove.cloud 该账号的 user id |
-| `AICHUYEL_<账号名>_TOKEN` | ai.chuyel.cn 该账号的 Access Token |
-| `AICHUYEL_<账号名>_USER_ID` | ai.chuyel.cn 该账号的 user id |
-| `JIUUIJDE5_<账号名>_TOKEN` | jiuuij.de5.net 该账号的 Access Token |
-| `JIUUIJDE5_<账号名>_USER_ID` | jiuuij.de5.net 该账号的 user id |
-| `HCNSEC_<账号名>_TOKEN` | api.hcnsec.cn 该账号的 Access Token(One API) |
-| `HCNSEC_<账号名>_USER_ID` | api.hcnsec.cn 该账号的 user id |
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
 | `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
-**多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。例如:
-- makelove 账号 a6732413: `MAKELOVE_A6732413_TOKEN` + `MAKELOVE_A6732413_USER_ID`
+**多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。
 
-加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加一对 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
-
-> 💡 接入新的 New API 站点(只要响应头有 `X-New-Api-Version` 或 meta `generator=new-api`),
-> 在 `checkins/` 下抄一份 `makelove_cloud.py`,改 `site_label`/`base_url`/`env_prefix` 三个参数即可。
+加新账号时除了加 Secret,还要在 `.github/workflows/checkin.yml` 的 env 块下加对应的 `${{ secrets.XXX }}` 引用(GitHub Actions 不会自动注入所有 Secret,必须显式声明)。
 
 ### token.dialoguedui.com(小怼Code)—— 特殊:Turnstile + refresh_token 轮转
 
@@ -113,9 +95,9 @@ daily-checkin/
 为了避免被站点识别为"批量签到机器人":
 
 1. **启动随机延迟 0-40 分钟** —— cron 在 8:00 唤醒,实际开跑在 8:00-8:40 之间随机
-2. **同一站点账号串行 + 间隔 3-15 分钟随机** —— 例如 makelove 三个账号不会同时打,每两个之间等 3-15 分钟
+2. **同一站点账号串行 + 间隔 3-15 分钟随机** —— 同站多账号不会同时打,每两个之间等 3-15 分钟
 3. **同站账号顺序随机** —— 每天先签谁后签谁不固定
-4. **不同站点并行** —— makelove / jiuuij / hcnsec 等互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
+4. **不同站点并行** —— 各站互不阻塞,各自按各自节奏走;同一账号在不同站点是同时签到的,因为风控只在同站内生效
 
 参数定义在 `main.py` 顶部的 `STARTUP_DELAY_MAX` / `SAMEMSITE_GAP_MIN` / `SAMEMSITE_GAP_MAX`。
 
@@ -124,8 +106,8 @@ daily-checkin/
 
 **预算估算**(GitHub Actions 私有仓库免费 2000 分钟/月):
 - 站点并行,所以 job 时长 ≈ 启动延迟(0-40 分) + max(各站串行耗时) + 收尾,与账号总数关系不大
-- 当前最大单站是 makelove 的 3 账号 → 最坏 ~30 分钟同站间隔,加启动延迟 job 上限约 70 分钟
-- 多账号实际平均每天 ~40 分钟,每月 ~1200 分钟,远在 2000 分钟额度内
+- 目前只剩 1 个站点 1 个账号 → 实际每天只有 0-40 分钟启动延迟 + 十几秒请求
+- 每月远在 2000 分钟额度内
 
 ## 添加新的签到站点
 
@@ -159,18 +141,13 @@ pip install -r requirements.txt
 python main.py
 
 # 测试单站点单账号(其他未配置的会自动跳过)
-MAKELOVE_A6732413_TOKEN='xxx' MAKELOVE_A6732413_USER_ID='952' python main.py
+DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN='rt_xxx' python main.py
 ```
 
 ## 凭据维护
 
-**New API 站点(makelove / uu6 等)的 Access Token 是长效的,不会过期**,只在以下情况需要更新:
-1. 你在网站个人设置里**手动重置了 token**
-2. 站点管理员升级或重置了 token(极少发生)
-
-判断 token 是否失效: workflow 跑出来报错 `Access Token 已失效或被重置` 时,重新登录浏览器
-GET `/api/user/token` 拿新值,然后 `gh secret set <NAME> --repo Felixgmail/daily-checkin --body '新token'`
-即可,无需重新部署或改代码。
+`DIALOGUEDUI_<账号名>_REFRESH_TOKEN` 是一次性轮转的,正常情况下由 workflow 自动回写,无需人工维护。
+只有 refresh 返回 401(链断)时才需要重新登录取一次新值,见上方专节。
 
 ## 常见问题
 
@@ -219,20 +196,35 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
 
 留作以后维护/调试时参考。
 
-### New API 通用基类 (`checkins/_newapi.py`)
+### 已移除的站点(2026-10)
+
+| 站点 | 移除原因 |
+|---|---|
+| `newapi.makelove.cloud` | 签到接口要求 Cloudflare Turnstile token,脚本无法生成;8 个账号全部失败 |
+| `api.hcnsec.cn` | 同上(Turnstile token 为空),9 月底起失效 |
+| `ai.chuyel.cn` | 站点后端长期 `HTTP 522 Connection timed out` |
+| `jiuuij.de5.net` | 证书域名不匹配 (`CERTIFICATE_VERIFY_FAILED: Hostname mismatch`) |
+
+> 这些站点的诊断结论已记录,若日后站点恢复人机验证之外的方式(如重新开放 checkin 接口),
+> 可按下面 New API 通用接口说明重新接入。
+
+### New API 通用接口(供重新接入参考)
+
 所有基于 [New API](https://github.com/QuantumNous/new-api) (含 One API 衍生)的站点共用同一套接口:
 - 鉴权: `Authorization: Bearer <access_token>` + `New-Api-User: <id>` (Bearer 前缀可省)
 - 签到: `POST /api/user/checkin`
   - 成功: `{"success":true,"data":{"checkin_date":"...","quota_awarded":...}}`
   - 已签: `{"success":false,"message":"今日已签到"}`
+  - **若返回 `Turnstile token 为空`,说明该站已开启人机验证,脚本方案不可行**
 - 用户信息: `GET /api/user/self` → `data.quota`,余额 ≈ `quota / 500000` USD
 - 获取 access token: 浏览器登录 → `/console/personal` 找 Access Token; 或登录后 GET `/api/user/token`
 - 识别方法: 响应头有 `X-New-Api-Version`,或 HTML meta 有 `generator=new-api`
 
-### newapi.makelove.cloud (`checkins/makelove_cloud.py`)
+### newapi.makelove.cloud(已移除)
 版本 `v1.0.0-rc.6-makelove.1`。
 - **⚠️ IP 风控两层**(其他 New API 站点不一定有):
   1. `/api/user/login` 在 GitHub Actions 的 Azure ASN(AS8075) 上直接拒登("用户名或密码错误,或用户已被封禁",即使密码对)
   2. session cookie 绑定登录 IP, 跨 IP 复用 cookie 返回 401 "无权进行此操作"
-- **Access Token 不受此风控影响**(token 鉴权不绑 IP),所以本框架统一用 token
+- **Access Token 不受此风控影响**(token 鉴权不绑 IP)
+
 
