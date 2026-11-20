@@ -72,6 +72,21 @@ def main() -> None:
         print("observation:", json.dumps(obs, ensure_ascii=False))
         print("failed requests:", failed[-8:])
 
+        # 验签严格度探测: 发几种假 token,看服务端报错差异
+        for label, fake in [("empty", ""), ("garbage", "x" * 60),
+                            ("jwt_like", "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.fake")]:
+            r = page.evaluate("""async (tt) => {
+                const t = localStorage.getItem('token') || '';
+                const q = await fetch('./api/checkin', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json', Authorization:'Bearer '+t},
+                    body: JSON.stringify({turnstileToken: tt}),
+                });
+                let d={}; try{d=await q.json();}catch(e){}
+                return {status:q.status, body:d};
+            }""", fake)
+            print(f"fake[{label}]: {json.dumps(r, ensure_ascii=False)[:300]}")
+
         # 若 Turnstile 自动签发了 token,尝试签到
         tt = page.evaluate(
             "() => document.querySelector(\"input[name='cf-turnstile-response']\")?.value || ''")
