@@ -27,16 +27,21 @@ def run_once(p, label: str, launch_args: list[str]) -> dict:
                               viewport={"width": 1280, "height": 900})
     page = ctx.new_page()
     failed = []
+    console = []
+    responses = []
     page.on("requestfailed", lambda r: failed.append((r.url[:110], str(r.failure)[:80])))
+    page.on("console", lambda m: console.append((m.type, m.text[:160])))
+    page.on("response", lambda r: responses.append((r.status, r.url[:120]))
+            if "challenge" in r.url or "turnstile" in r.url else None)
 
     at = os.environ.get("DDU_ACCESS_TOKEN", "").strip()
     page.goto(f"{BASE}/checkin/", wait_until="domcontentloaded", timeout=60000)
     page.evaluate("t => localStorage.setItem('token', t)", at)
     page.reload(wait_until="domcontentloaded", timeout=60000)
 
-    # 等 Turnstile 最多 25 秒
+    # 等 Turnstile 最多 60 秒
     token_len = 0
-    for _ in range(25):
+    for _ in range(60):
         page.wait_for_timeout(1000)
         token_len = page.evaluate(
             "() => (document.querySelector(\"input[name='cf-turnstile-response']\")?.value||'').length")
@@ -50,7 +55,8 @@ def run_once(p, label: str, launch_args: list[str]) -> dict:
         hiddenTokenLen: (document.querySelector("input[name='cf-turnstile-response']")?.value||'').length,
         iframes: [...document.querySelectorAll('iframe')].map(f=>f.src.slice(0,90)),
     })""")
-    result = {"label": label, "obs": obs, "failed": failed[-6:]}
+    result = {"label": label, "obs": obs, "failed": failed[-6:],
+              "console": console[-8:], "challenge_responses": responses[-8:]}
 
     # 拿到真 token 就签到
     if obs["hiddenTokenLen"] > 20:
