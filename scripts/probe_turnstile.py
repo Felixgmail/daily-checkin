@@ -37,6 +37,19 @@ def main() -> None:
         failed = []
         page.on("requestfailed", lambda r: failed.append((r.url[:110], str(r.failure)[:80])))
 
+        # 尝试绕过 ERR_NAME_NOT_RESOLVED: 用 Cloudflare 官方公共 DNS 解析挑战域名,
+        # 并在浏览器层拦截该域请求改走 challenges.cloudflare.com(同 CDN,可解析)。
+        probe_domains = ["brunhild.challenges.cloudflare.com",
+                         "challenges.cloudflare.com"]
+        print("DNS checks (browser):")
+        for d in probe_domains:
+            r = page.evaluate("""async (d) => {
+                try { const r = await fetch('https://' + d + '/cdn-cgi/challenge-platform/h/b/flow',
+                    {method:'HEAD', mode:'no-cors'}); return 'ok:' + r.status; }
+                catch(e) { return 'err:' + String(e).slice(0,80); }
+            }""", d)
+            print(f"  {d} -> {r}")
+
         page.goto(f"{BASE}/checkin/", wait_until="domcontentloaded", timeout=60000)
         # 注入登录态(前端 getAuthToken 从 localStorage 读)
         page.evaluate("t => localStorage.setItem('token', t)", at)
