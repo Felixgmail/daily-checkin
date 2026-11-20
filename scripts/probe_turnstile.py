@@ -94,7 +94,12 @@ def main() -> None:
         ]:
             try:
                 r = run_once(p, label, args)
-                print(json.dumps(r, ensure_ascii=False)[:700])
+                print(f"--- {label} ---")
+                print("obs:", json.dumps(r["obs"], ensure_ascii=False))
+                print("failed:", json.dumps(r["failed"], ensure_ascii=False))
+                print("challenge_responses:", json.dumps(r.get("challenge_responses", []), ensure_ascii=False))
+                if r.get("claim"):
+                    print("CLAIM:", json.dumps(r["claim"], ensure_ascii=False)[:400])
             except Exception as e:
                 print(f"{label} ERR: {type(e).__name__}: {str(e)[:200]}")
 
