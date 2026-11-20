@@ -17,7 +17,8 @@ daily-checkin/
 ├── main.py                    # 入口: 发现任务 → 执行 → 汇总 → 通知
 ├── checkins/                  # 签到任务目录(新增站点放这里)
 │   ├── base.py                # 任务基类 CheckinTask
-│   └── dialoguedui.py         # token.dialoguedui.com (小怼Code)
+│   ├── dialoguedui.py         # token.dialoguedui.com (小怼Code)
+│   └── altare_gg.py           # console.altare.gg (daily reward claim)
 ├── notify/                    # 通知模块
 │   └── __init__.py
 ├── .github/workflows/
@@ -35,6 +36,8 @@ daily-checkin/
 | Secret 名 | 说明 |
 |---|---|
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |
+| `ALTARE_<账号名>_EMAIL` | console.altare.gg 该账号的登录邮箱 |
+| `ALTARE_<账号名>_PASSWORD` | console.altare.gg 该账号的登录密码 |
 | `GH_PAT` | 有本仓库 Secrets 读写权限的 PAT(仅 dialoguedui 回写轮转 token 用) |
 
 **多账号**: 每个账号一对 Secret,`<账号名>` 全大写(字母+数字+下划线)。
@@ -65,6 +68,17 @@ daily-checkin/
 - workflow 回写带读回校验 + 重试;回写失败会让该 step 标红。
 - refresh 返回 401(rt 彻底失效,如多端登录互相挤掉)→ 签到结果会标注链断,
   此时按上面方法**重新登录取一次 refresh_token** 更新 Secret 即可(1 分钟操作)。
+
+### console.altare.gg —— daily reward claim
+
+纯密码登录,**无 Turnstile / 无验证码**,是本项目里最省事的站点:直接把邮箱密码
+存成 Secret 即可,脚本每天自动登录换 token 后签到,不需要人工取 token。
+
+规则:每个 UTC 日每人只能在一个自己拥有的 team 上领一次;连续签到每天多 0.67 bolts
+加成,10 天封顶;漏一天归零。今日已签时接口返回 `400 Already claimed today`,
+脚本按成功处理(幂等)。
+
+> 详见文末「附:已接入站点的接口侦察记录」。
 
 ### 通知通道(任选其一或多个,不配则不推送)
 
@@ -106,7 +120,8 @@ daily-checkin/
 
 **预算估算**(GitHub Actions 私有仓库免费 2000 分钟/月):
 - 站点并行,所以 job 时长 ≈ 启动延迟(0-40 分) + max(各站串行耗时) + 收尾,与账号总数关系不大
-- 目前只剩 1 个站点 1 个账号 → 实际每天只有 0-40 分钟启动延迟 + 十几秒请求
+- 目前 2 个站点、dialoguedui 3 账号 + altare 1 账号 → job 时长 ≈ 启动延迟(0-40 分)
+  + dialoguedui 同站串行的 2 个间隔(3-15 分 ×2) + 请求耗时
 - 每月远在 2000 分钟额度内
 
 ## 添加新的签到站点
@@ -141,7 +156,8 @@ pip install -r requirements.txt
 python main.py
 
 # 测试单站点单账号(其他未配置的会自动跳过)
-DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN='rt_xxx' python main.py
+ALTARE_LINDINGCHAN86_EMAIL='you@example.com' \
+ALTARE_LINDINGCHAN86_PASSWORD='xxx' CHECKIN_FAST=1 python main.py
 ```
 
 ## 凭据维护
@@ -227,4 +243,25 @@ A: GitHub Actions 在仓库 60 天无任何提交时会自动停掉定时任务,
   2. session cookie 绑定登录 IP, 跨 IP 复用 cookie 返回 401 "无权进行此操作"
 - **Access Token 不受此风控影响**(token 鉴权不绑 IP)
 
+### console.altare.gg (`checkins/altare_gg.py`)
 
+前端是 Vite SPA,接口从 `assets/AuthProvider-*.js` / `assets/Rewards-*.js` 反查得到
+(API client 工厂 `tu()` → `Pc()` 定义 rewards 方法)。`config.json` 里 `apiBaseUrl: "/"`,
+即接口与前端同源。
+
+| 用途 | 方法 | 路径 | 说明 |
+|---|---|---|---|
+| 登录 | POST | `/api/auth/login` | body `{"identifier": email, "password": pwd}`,注意字段名是 **identifier** 不是 email;返回 `{token, userId}` |
+| 验证 token | GET | `/api/user/me` | `Authorization: Bearer <token>` |
+| tenant 列表 | GET | `/api/tenants` | `items[]`,取 `role == "owner"` 的第一个;含 `lastDailyRewardClaimISO`/`currentStreak` |
+| 奖励状态 | GET | `/api/tenants/{tid}/rewards` | `daily.canClaim` / `currentStreak` / `totalRewardCents` |
+| **签到** | POST | `/api/tenants/{tid}/rewards/claim` | 成功返回奖励明细;已签返回 `400 {"error":"Already claimed today"}` |
+
+要点:
+- token 长效,前端存 `localStorage.manhattan_token`,登录响应无过期字段。
+- 所有非 GET 请求前端会带 `Idempotency-Key: <uuid>`,脚本照做(重试安全)。
+- **反爬**:裸 curl 指纹打 POST 会被 Cloudflare 返回 `429`(GET 不受影响,
+  `retry-after: 4`)。必须带正常浏览器 UA + `Origin` / `Referer` 头;
+  用真实浏览器会话实测 `400 Already claimed today`,鉴权与接口均正常。
+  脚本已配置 429/502/503/504 自动重试 2 次。
+- 每日奖励按 **UTC 日** 结算,与本项目 cron(UTC 0:00 唤醒)正好对齐。

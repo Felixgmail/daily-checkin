@@ -48,6 +48,11 @@ jobs:
           DIALOGUEDUI_QQ78978137_ACCESS_TOKEN: ${{ secrets.DIALOGUEDUI_QQ78978137_ACCESS_TOKEN }}
           DIALOGUEDUI_QQ78978137_ACCESS_EXP: ${{ secrets.DIALOGUEDUI_QQ78978137_ACCESS_EXP }}
           ROTATED_TOKENS_FILE: rotated_tokens.env
+          # ===== console.altare.gg 多账号 (daily reward claim) =====
+          # 纯密码登录 + 长效 token,无验证码。新增账号加一对
+          # ALTARE_<账号名>_EMAIL + ALTARE_<账号名>_PASSWORD,再复制两行引用。
+          ALTARE_LINDINGCHAN86_EMAIL: ${{ secrets.ALTARE_LINDINGCHAN86_EMAIL }}
+          ALTARE_LINDINGCHAN86_PASSWORD: ${{ secrets.ALTARE_LINDINGCHAN86_PASSWORD }}
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
