@@ -33,6 +33,10 @@ daily-checkin/
 
 ### 站点凭据(按需)
 
+> ⚠️ **2026-11-26:所有签到账号已清空**,当前仓库没有任何可执行的签到任务,
+> 每天运行会打印「未发现任何签到任务」。`checkins/` 下的站点模块保留,
+> 按下面说明重新添加 Secret 并在 workflow 里补引用即可恢复。
+
 | Secret 名 | 说明 |
 |---|---|
 | `DIALOGUEDUI_<账号名>_REFRESH_TOKEN` | token.dialoguedui.com 的 refresh_token(详见下方专节) |

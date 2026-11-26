@@ -31,28 +31,13 @@ jobs:
         # 想要失败标红可以删掉 continue-on-error
         continue-on-error: true
         env:
-          # tokenwork.app / ai.router.team / aiapi1.cc.cd / ai.8online 已移除
-          # makelove.cloud / api.hcnsec.cn (签到接口已加 Turnstile 人机验证,脚本无法通过)
-          # ai.chuyel.cn (站点长期 522) / jiuuij.de5.net (证书域名不匹配) 已移除
-          # ===== token.dialoguedui.com 多账号 (小怼Code, Turnstile + refresh_token 轮转) =====
-          # 登录有 Turnstile 人机验证,只能靠 refresh_token 续期。refresh_token 一次性轮转,
-          # 跑完由下方"回写"step 用 GH_PAT 写回新值。ACCESS_TOKEN/EXP 由脚本自动维护,无需手动配。
-          # 新增账号: 加 DIALOGUEDUI_<账号>_REFRESH_TOKEN,再在这里复制一行引用即可。
-          DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_REFRESH_TOKEN }}
-          DIALOGUEDUI_LINDINGCHAN_ACCESS_TOKEN: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_ACCESS_TOKEN }}
-          DIALOGUEDUI_LINDINGCHAN_ACCESS_EXP: ${{ secrets.DIALOGUEDUI_LINDINGCHAN_ACCESS_EXP }}
-          DIALOGUEDUI_LINYUGE1_REFRESH_TOKEN: ${{ secrets.DIALOGUEDUI_LINYUGE1_REFRESH_TOKEN }}
-          DIALOGUEDUI_LINYUGE1_ACCESS_TOKEN: ${{ secrets.DIALOGUEDUI_LINYUGE1_ACCESS_TOKEN }}
-          DIALOGUEDUI_LINYUGE1_ACCESS_EXP: ${{ secrets.DIALOGUEDUI_LINYUGE1_ACCESS_EXP }}
-          DIALOGUEDUI_QQ78978137_REFRESH_TOKEN: ${{ secrets.DIALOGUEDUI_QQ78978137_REFRESH_TOKEN }}
-          DIALOGUEDUI_QQ78978137_ACCESS_TOKEN: ${{ secrets.DIALOGUEDUI_QQ78978137_ACCESS_TOKEN }}
-          DIALOGUEDUI_QQ78978137_ACCESS_EXP: ${{ secrets.DIALOGUEDUI_QQ78978137_ACCESS_EXP }}
-          ROTATED_TOKENS_FILE: rotated_tokens.env
-          # ===== console.altare.gg 多账号 (daily reward claim) =====
-          # 纯密码登录 + 长效 token,无验证码。新增账号加一对
-          # ALTARE_<账号名>_EMAIL + ALTARE_<账号名>_PASSWORD,再复制两行引用。
-          ALTARE_LINDINGCHAN86_EMAIL: ${{ secrets.ALTARE_LINDINGCHAN86_EMAIL }}
-          ALTARE_LINDINGCHAN86_PASSWORD: ${{ secrets.ALTARE_LINDINGCHAN86_PASSWORD }}
+          # ===== 站点账号凭据 =====
+          # 2026-11-26 按用户要求清空全部签到账号(4 个账号 / 11 个 Secret)。
+          # checkins/ 下的模块保留,重新加账号时按各模块 docstring 里的 Secret 命名
+          # 约定新建 Secret,再在此处补上对应引用即可。
+          #
+          # 历史: tokenwork.app / ai.router.team / aiapi1.cc.cd / ai.8online /
+          #       makelove.cloud / api.hcnsec.cn / ai.chuyel.cn / jiuuij.de5.net 已移除
           # ===== 通知通道 (任意配置一个或多个,不配置则不推送) =====
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
           BARK_KEY: ${{ secrets.BARK_KEY }}
